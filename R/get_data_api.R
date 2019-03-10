@@ -1,4 +1,4 @@
-# This script is getting data from api
+# This script is getting data using api
 
 # Upload libraries
 library(httr)
@@ -6,25 +6,12 @@ library(jsonlite)
 library(xml2)
 library(dplyr)
 
-#get data from songkick
-# artist <- GET("https://api.songkick.com/api/3.0/search/artists.json?apikey={your_api_key}&query={Sia}") %>%
-#   content()
 
-
-#get data from ticketmaster: I used my own apiKey, this needs replacing 
+# get data from ticketmaster: I used my own api Key, this needs replacing with your own key from: https://developer.ticketmaster.com/products-and-docs/apis/getting-started/
 events <- GET("https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&city=Sheffield&apikey=NqcnLGc44dacGS0uZClA8U3L5Gj3OnEs") %>%
   content()
 
-# events <- GET("https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&dmaID=604&apikey=NqcnLGc44dacGS0uZClA8U3L5Gj3OnEs") %>%
-#   content()
-
-# events$`_embedded`$events[[20]]$name
-# events$`_embedded`$events[[20]]$dates$start$localDate
-# events$`_embedded`$events[[20]]$dates$start$localTime
-# events$`_embedded`$events[[20]]$classifications[[1]]$genre$name
-# events$`_embedded`$events[[20]]$priceRanges[[1]]$min
-# events$`_embedded`$events[[20]]$priceRanges[[1]]$max
-
+# this function gets data from different places of the api content and puts it in a dataframe
 collect_events <- function(i) {
   name <- ifelse(is.null(events$`_embedded`$events[[i]]$name), NA, events$`_embedded`$events[[i]]$name)
   date <- ifelse(is.null(events$`_embedded`$events[[i]]$dates$start$localDate), NA, events$`_embedded`$events[[i]]$dates$start$localDate)
@@ -40,11 +27,14 @@ collect_events <- function(i) {
             "max price" = pricemax)
 }
 
+# create table with data 
 events_tb <- lapply(1:length(events$`_embedded`$events), collect_events) %>% 
   bind_rows() 
 
+# format date from character to date
 events_tb$date <- as.Date(events_tb$date)
 
+# sort in date ascending order 
 events_tb <- events_tb %>% 
   arrange(date)
 
