@@ -12,15 +12,12 @@ artist_plays <- aggregate(spotify_last6mo$Plays, by=list(Artist=spotify_last6mo$
 # sort list and keep top 20
 top_20 <- head(artist_plays[order(artist_plays$x, decreasing=TRUE),], 20)
 rownames(top_20) <- 1:20
-top_20_artists <- top_20[1]
+colnames(top_20) <- c("Artist","Plays last 6mo")
 
 # lapply to get songkick IDs (RUN FUNCTIONS IN functions.R)
-songkick_ids <- lapply(top_20_artists$Artist, artist_name_to_songkick_id)
+songkick_ids <- sapply(top_20$Artist, artist_name_to_songkick_id)
+top_20$Songkick <- songkick_ids
 
-# trying songkick query (results need decoding...)
-songkick_api_key <- "OdCeFTr8qFUSwUVt"
-songkick_artist_id <- artist_name_to_songkick_id("Eminem")
-songkick_query_url <- paste ("https://api.songkick.com/api/3.0/artists/", 
-  songkick_artist_id, "/gigography.json?apikey=", songkick_api_key, sep="")
-library(jsonlite)
-songkick_results <- fromJSON(songkick_query_url)
+write.csv(top_20, "R/artist_data.csv")
+
+eminemEventIDs <- songkick_artist_id_to_songkick_event_ids(artist_name_to_songkick_id("Eminem"))

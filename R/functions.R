@@ -4,13 +4,24 @@ library(dplyr)
 
 
 
-# MUSICBRAINZ UDFs
+# MUSICBRAINZ AND SONGKICK UDFs
 
 artist_name_to_songkick_id <- function(artist_name){
   mb_gid <- artist_name_to_musicbrainz_gid(artist_name)
-  result <- musicbrainz_gid_to_songkick_id(mb_gid)
+  mb_gid
+  if (is.null(mb_gid)) {
+    return("musicbrainz gid not found")
+  } else {
+    result <- musicbrainz_gid_to_songkick_id(mb_gid)
+  }
+  # Pause to avoid 503 error on loop
   Sys.sleep(0.5)
-  return(result)
+  result
+  if (length(result) < 1) {
+    return("NULL")
+  } else {
+    return(result)
+  }
 }
 
 artist_name_to_musicbrainz_gid <- function(artist_name) {
@@ -36,4 +47,26 @@ musicbrainz_gid_to_songkick_id <- function(musicbrainz_gid) {
   songkick_url <- json2$relations$url$resource[json2$relations$type=='songkick']
   # extract songkick ID from songkick URL
   return(basename(songkick_url)) 
+}
+
+songkick_artist_id_to_songkick_event_ids <- function(songkick_artist_id) {
+  library(jsonlite)
+  # Build query URL and execute
+  songkick_api_key <- "OdCeFTr8qFUSwUVt"
+  songkick_query_url <- paste ("https://api.songkick.com/api/3.0/artists/", 
+                               songkick_artist_id, "/gigography.json?apikey=", songkick_api_key, sep="")
+  songkick_results <- fromJSON(songkick_query_url)
+  # extract Event IDs
+  eventIDs <- songkick_results[["resultsPage"]][["results"]][["event"]][["venue"]][["id"]]
+  totalPages <- length(songkick_results[["resultsPage"]])
+  # repeat on further pages (if any)
+  if (totalPages > 1) {
+    pageNums <- 2:totalPages
+    for (pageNum in pageNums) {
+      songkick_query_url <- paste(songkick_query_url,"&page=",pageNum,sep="")
+      songkick_results <- fromJSON(songkick_query_url)
+      eventIDs <- append(eventIDs, songkick_results[["resultsPage"]][["results"]][["event"]][["venue"]][["id"]])
+    }
+  }
+  return (eventIDs)
 }
