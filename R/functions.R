@@ -4,15 +4,64 @@ library(dplyr)
 
 
 
-# MUSICBRAINZ AND SONGKICK UDFs
+#*********************************************************************************************************
+
+# SONGKICK UDFS
 
 artist_name_to_songkick_id <- function(artist_name){
+  library(jsonlite)
+  sk_api_key <- "OdCeFTr8qFUSwUVt"
+  sk_query_url <- paste ("https://api.songkick.com/api/3.0/search/artists.json?apikey=", sk_api_key,
+                               "&query=", URLencode(artist_name), sep="")
+  sk_json <- fromJSON(sk_query_url)
+  # Pause to avoid 503 error on loop
+  Sys.sleep(0.5)
+  result <- as.character(sk_json[['resultsPage']][['results']][['artist']][['id']][1])
+  return(result)
+}
+
+songkick_artist_id_to_event_data <- function(sk_artist_id) {
+  library(jsonlite)
+  # Build query URL and execute
+  sk_api_key <- "OdCeFTr8qFUSwUVt"
+  sk_query_url <- paste("https://api.songkick.com/api/3.0/artists/", sk_artist_id, 
+                        "/gigography.json?apikey=", sk_api_key, sep="")
+  sk_json <- fromJSON(sk_query_url)
+  # extract Event IDs
+  eventIDs <- as.character(sk_json[["resultsPage"]][["results"]][["event"]][["id"]])
+  eventDates <- sk_json[["resultsPage"]][["results"]][["event"]][["start"]][["date"]]
+  eventCities <- sk_json[["resultsPage"]][["results"]][["event"]][["location"]][["city"]]
+  eventLngs <- as.double(sk_json[["resultsPage"]][["results"]][["event"]][["location"]][["lng"]])
+  eventLats <- as.double(sk_json[["resultsPage"]][["results"]][["event"]][["location"]][["lat"]])
+  # repeat on further pages (if any)
+  totalPages <- ceiling(sk_json[["resultsPage"]][['totalEntries']] / sk_json[["resultsPage"]][['perPage']])
+  if (totalPages > 1) {
+    pageNums <- 2:totalPages
+    for (pageNum in pageNums) {
+      sk_query_url <- paste(sk_query_url,"&page=",pageNum,sep="")
+      sk_json <- fromJSON(sk_query_url)
+      eventIDs <- append(eventIDs, as.character(sk_json[["resultsPage"]][["results"]][["event"]][["id"]]))
+      eventDates <- append(eventDates, sk_json[["resultsPage"]][["results"]][["event"]][["start"]][["date"]])
+      eventCities <- append(eventCities, sk_json[["resultsPage"]][["results"]][["event"]][["location"]][["city"]])
+      eventLngs <- append(eventLngs, as.double(sk_json[["resultsPage"]][["results"]][["event"]][["location"]][["lng"]]))
+      eventLats <- append(eventLats, as.double(sk_json[["resultsPage"]][["results"]][["event"]][["location"]][["lat"]]))
+    }
+  }
+  return (cbind(sk_artist_id, eventIDs, eventDates, eventCities, eventLngs, eventLats))
+}
+
+
+#*********************************************************************************************************
+
+# MUSICBRAINZ UDFs
+
+artist_name_to_platform_URL <- function(artist_name, platform){
   mb_gid <- artist_name_to_musicbrainz_gid(artist_name)
   mb_gid
   if (is.null(mb_gid)) {
     return("musicbrainz gid not found")
   } else {
-    result <- musicbrainz_gid_to_songkick_id(mb_gid)
+    result <- musicbrainz_gid_to_platform_URLs(mb_gid, platform)
   }
   # Pause to avoid 503 error on loop
   Sys.sleep(0.5)
@@ -34,39 +83,16 @@ artist_name_to_musicbrainz_gid <- function(artist_name) {
   return(json1$gid)
 }
 
-musicbrainz_gid_to_songkick_id <- function(musicbrainz_gid) {
+musicbrainz_gid_to_platform_URL <- function(musicbrainz_gid, platform) {
+  if (is.null(musicbrainz_gid)) {
+    return(NULL)
+  }
   library(jsonlite)
   # building url for further musicbrainz api query to include 'relationship' URLs
-  json_url_for_links <- paste('http://musicbrainz.org/ws/2/artist/', musicbrainz_gid, '?inc=url-rels', sep="")
+  musicbrainz_query_url <- paste('http://musicbrainz.org/ws/2/artist/', musicbrainz_gid, '?inc=url-rels', sep="")
   # execute second musicbrainz api query
-  json2 <- fromJSON(json_url_for_links)
-  
-  # extract URLs 
-  youtube_url <- json2$relations$url$resource[json2$relations$type=='youtube']
-  official_url <- json2$relations$url$resource[json2$relations$type=='official homepage']
-  songkick_url <- json2$relations$url$resource[json2$relations$type=='songkick']
-  # extract songkick ID from songkick URL
-  return(basename(songkick_url)) 
-}
-
-songkick_artist_id_to_songkick_event_ids <- function(songkick_artist_id) {
-  library(jsonlite)
-  # Build query URL and execute
-  songkick_api_key <- "OdCeFTr8qFUSwUVt"
-  songkick_query_url <- paste ("https://api.songkick.com/api/3.0/artists/", 
-                               songkick_artist_id, "/gigography.json?apikey=", songkick_api_key, sep="")
-  songkick_results <- fromJSON(songkick_query_url)
-  # extract Event IDs
-  eventIDs <- songkick_results[["resultsPage"]][["results"]][["event"]][["venue"]][["id"]]
-  totalPages <- length(songkick_results[["resultsPage"]])
-  # repeat on further pages (if any)
-  if (totalPages > 1) {
-    pageNums <- 2:totalPages
-    for (pageNum in pageNums) {
-      songkick_query_url <- paste(songkick_query_url,"&page=",pageNum,sep="")
-      songkick_results <- fromJSON(songkick_query_url)
-      eventIDs <- append(eventIDs, songkick_results[["resultsPage"]][["results"]][["event"]][["venue"]][["id"]])
-    }
-  }
-  return (eventIDs)
+  mb_json <- fromJSON(musicbrainz_query_url)
+  # extract URL for specified platform
+  result <- mb_json$relations$url$resource[mb_json$relations$type==platform]
+  return(result)
 }
