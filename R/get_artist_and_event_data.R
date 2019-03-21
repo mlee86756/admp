@@ -24,7 +24,6 @@ top_20$'Songkick ID' <- sapply(as.character(top_20$Artist), artist_name_to_songk
 write.csv(top_20, "R/artist_data.csv")
 
 top_20_artists_event_data_list <- lapply(as.character(top_20$'Songkick ID'), songkick_artist_id_to_event_data)
-top_20_artists_event_data_df <- data.frame(matrix(unlist(top_20_artists_event_data_list), ncol=6))
+top_20_artists_event_data_df <- as.data.frame(do.call(rbind, top_20_artists_event_data_list))
 colnames(top_20_artists_event_data_df) <- c("Artist ID", "Event ID", "Event Date", "Event City", "Event Longitude", "Event Latitude")
-
 write.csv(top_20_artists_event_data_df, "R/artist_events.csv")
