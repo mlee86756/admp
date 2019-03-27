@@ -19,11 +19,15 @@ rownames(top_20) <- 1:20
 colnames(top_20) <- c("Artist","Total Plays")
 
 # sapply to get songkick IDs (RUN FUNCTIONS IN functions.R)
-top_20$'Songkick ID' <- sapply(as.character(top_20$Artist), artist_name_to_songkick_id)
+top_20$'Songkick ID' <- sapply(as.character(top_20$Artist), artist_name_to_songkick_artist_id)
 
 write.csv(top_20, "R/artist_data.csv")
 
-top_20_artists_event_data_list <- lapply(as.character(top_20$'Songkick ID'), songkick_artist_id_to_event_data)
-top_20_artists_event_data_df <- as.data.frame(do.call(rbind, top_20_artists_event_data_list))
-colnames(top_20_artists_event_data_df) <- c("Artist ID", "Event ID", "Event Date", "Event City", "Event Longitude", "Event Latitude")
-write.csv(top_20_artists_event_data_df, "R/artist_events.csv")
+top_20_artists_events_df <- data_frame_via_lapply(as.character(top_20$'Songkick ID'), songkick_events_by_artist_id)
+
+write.csv(top_20_artists_events_df, "R/artist_events.csv")
+
+venues_list <- unique(na.omit(as.character(top_20_artists_events_df$venueID)),incomparables=FALSE)
+
+songkick_venues <- data_frame_via_lapply(venues_list, songkick_venue_retrieve_by_id)
+write.csv(songkick_venues, "R/songkick_venues.csv")
