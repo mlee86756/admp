@@ -1,9 +1,8 @@
-library(httr)
-library(jsonlite)
-
+source("R/functions.R")
+source("R/songkick_functions.R")
 
 # import spotify dataset
-spotify <- read.csv("Excel/spotify.csv")
+spotify <- read.csv("data/spotify.csv")
 
 # isolate last 6 months (last 26 weeks of 200 chart positions)
 #spotify_last6mo <- tail(spotify, 26*200)
@@ -20,14 +19,12 @@ colnames(top_20) <- c("Artist","Total Plays")
 
 # sapply to get songkick IDs (RUN FUNCTIONS IN functions.R)
 top_20$'Songkick ID' <- sapply(as.character(top_20$Artist), artist_name_to_songkick_artist_id)
-
-write.csv(top_20, "R/artist_data.csv")
+write.csv(top_20, "data/artist_data.csv")
 
 top_20_artists_events_df <- data_frame_via_lapply(as.character(top_20$'Songkick ID'), songkick_events_by_artist_id)
+write.csv(top_20_artists_events_df, "data/artist_events.csv")
 
-write.csv(top_20_artists_events_df, "R/artist_events.csv")
-
+# get list of distinct venues used by top 20 artists, and fetch data for each
 venues_list <- unique(na.omit(as.character(top_20_artists_events_df$venueID)),incomparables=FALSE)
-
 songkick_venues <- data_frame_via_lapply(venues_list, songkick_venue_retrieve_by_id)
-write.csv(songkick_venues, "R/songkick_venues.csv")
+write.csv(songkick_venues, "data/songkick_venues.csv")
