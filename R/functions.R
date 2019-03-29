@@ -1,7 +1,7 @@
-## This defines functions
+## This defines all functions needed for getting data using API
 
 library(dplyr)
-
+library(jsonlite)
 
 
 
@@ -20,7 +20,7 @@ data_frame_via_lapply <- function(data, udf) {
 # SONGKICK UDFS
 
 artist_name_to_songkick_artist_id <- function(artist_name){
-  library(jsonlite)
+  
   sk_api_key <- "OdCeFTr8qFUSwUVt"
   sk_query_url <- paste ("https://api.songkick.com/api/3.0/search/artists.json?apikey=", sk_api_key,
                                "&query=", URLencode(artist_name), sep="")
