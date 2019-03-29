@@ -6,6 +6,7 @@ library(dplyr)
 library(jsonlite)
 
 
+
 # API key
 sk_api_key <- "OdCeFTr8qFUSwUVt"
 
@@ -124,4 +125,10 @@ musicbrainz_gid_to_platform_URL <- function(musicbrainz_gid, platform) {
   mb_json <- fromJSON(musicbrainz_query_url)
   # extract URL for specified platform
   result <- mb_json$relations$url$resource[mb_json$relations$type==platform]
+
+# Function to run some other function that creates a list of lists, and return it as a data frame
+data_frame_via_lapply <- function(data, udf) {
+  results <- lapply(data, udf)
+  return(as.data.frame(do.call(rbind, results)))
+
 }
