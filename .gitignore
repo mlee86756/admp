@@ -5,4 +5,4 @@ packrat/src/
 derby.log
 logs/
 .RData
-
+R/.Rhistory
