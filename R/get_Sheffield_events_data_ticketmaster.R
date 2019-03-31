@@ -170,7 +170,9 @@ for(i in 1:length(minprices_final)) {
   }
 }
 
-# create a dataframe and remove all rows with NA Events
+
+# Create a dataframe and remove all rows with NA Events -----------------
+
 events_dataframe <- do.call(bind_rows, Map(data.frame,
                            'Event Name' = events_final, 
                            'Date' = dates_final,
@@ -190,7 +192,10 @@ rm(list=ls(pattern="_list"),
    name, dates, times, genres, minprices, maxprices, lats, longs, parking, venues, apicontent)
 rm(list=ls(pattern="_final"))
 
-# 
+
+# Save dataframe as csv -------------------------------------------------
+
+
 events_dataframe$Date <- as.Date(events_dataframe$Date) 
 
 events_dataframe <- arrange(events_dataframe, Date) 
