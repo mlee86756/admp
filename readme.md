@@ -36,12 +36,9 @@ Datasets on future and past events can be obtained from the following sources:
 ## Analysis
 
 
-##### Question one: Which artists have not performed in Sheffield since 1st January 2018, and:
-1. Have had at least three Spotify Top 30 songs in that time
-2. Meet at least two of these criteria:
-* >500,000 YouTube subscribers
-* >500,000 Facebook likes
-* >500,000 Twitter followers
+##### Question one: Recommended artist
+1. Who are the top 20 artists, by Spotify-Top-200 plays, for 2018?
+2. Which of these top 20 artists have not performed in Sheffield since 1st January 2018?
 
 ##### Question two: What is the right date for this event? Is the artist available? Is there any competition on that date? 
 
