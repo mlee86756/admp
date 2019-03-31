@@ -36,17 +36,25 @@ Datasets on future and past events can be obtained from the following sources:
 ## Analysis
 
 
-##### Question one: Recommended artist
+##### Question one: Recommended artists
 1. Who are the top 20 artists, by Spotify-Top-200 plays, for 2018?
 2. Which of these top 20 artists have not performed in Sheffield since 1st January 2018?
 
-##### Question two: What is the right date for this event? Is the artist available? Is there any competition on that date? 
+##### Question two: Recommended venue 
+1. What are the top 5 Sheffield venues with a capacity over 1,000 by music events per month in 2019?
+2. What is the breakdown of performances by the recommended artists at venues with a similar capacity to that of each of top 5 Sheffield venues for 2018?
 
-##### Question three: What venue has the largest capacity, is available on the date, and is within close proximity of at least three transport links?
+##### Question three: Recommended date
+1. What are the incoming events for recommended artists?
+2. What are the incoming events in Sheffield for 2019?
 
-##### Question four: What is the best ticket selling price? What is the expected profit from this event? 
+##### Question four: Recommended safety
+1. What is month-by-month breakdown of crime incidents occurring at Sheffield arenas** for 2016-2018?
+2. What are the crime rates for recommended venues?
 
-##### Question five: What is the final recommendation with total profit and maximum impact on social media? 
+##### Question five: Recommended revenue
+1. What is the average price for recommended event (venue, artist)?
+2. What is the forecast revenue (price*capacity)?
 
 
 ## Project Resources
